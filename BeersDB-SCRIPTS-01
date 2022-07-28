@@ -85,7 +85,7 @@ GO
       SET NOCOUNT ON;
 
         -- Insert statements for procedure here
-      SELECT MarcaId,MarcaName, BrandType as BrandType FROM dbo.Brands 
+      SELECT BrandId, BrandName, BrandType as BrandType FROM dbo.Brands 
       WHERE (@BrandId IS NULL OR BrandId=@BrandId)
       AND (@BrandName IS NULL OR BrandName LIKE '%'+@BrandName+'%')
       AND (@BrandType IS NULL OR BrandType LIKE '%'+@BrandType+'%')
