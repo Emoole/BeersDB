@@ -1,0 +1,98 @@
+-- SP_updateBrands
+  CREATE PROCEDURE [dbo].[SP_updateBrands]
+    -- Add the parameters for the stored procedure here
+    @BrandId int,
+    @BrandName varchar (250),
+    @BrandType varchar (100)
+  AS
+  BEGIN
+    -- SET NOCOUNT ON added to prevent extra result sets from
+    -- interfering with SELECT statements.
+    SET NOCOUNT ON;
+
+      -- Insert statements for procedure here
+    UPDATE dbo.Marcas 
+    SET BrandName=@BrandName, BrandType=@BrandType,UpdatedDate=GETDATE()
+    WHERE BrandId=@BrandId
+    END
+  GO
+  
+-- SP_addBeers
+  CREATE PROCEDURE [dbo].[SP_addBeers]
+    -- Add the parameters for the stored procedure here
+    @BeerName varchar (250),
+    @BrandId varchar (250),
+    @CreatedDate datetime =NULL
+  AS
+  BEGIN
+    -- SET NOCOUNT ON added to prevent extra result sets from
+    -- interfering with SELECT statements.
+    SET NOCOUNT ON;
+
+      -- Insert statements for procedure here
+    INSERT INTO dbo.Beers (BeerName, BrandId, CreatedDate, CreatedBy,UpdatedDate,UpdatedBy,ComputerId,ApplicationId)
+    VALUES (@BeerName, @BrandId, GETDATE(),'AdminUser',NULL,NULL,'AdminDevice',0)
+    END
+  GO
+  
+-- SP_addBrands
+  CREATE PROCEDURE [dbo].[addBrands]
+    -- Add the parameters for the stored procedure here
+    @BrandName varchar (250),
+    @BrandType varchar (100),
+    @CreatedDate datetime =NULL
+  AS
+  BEGIN
+    -- SET NOCOUNT ON added to prevent extra result sets from
+    -- interfering with SELECT statements.
+    SET NOCOUNT ON;
+
+      -- Insert statements for procedure here
+    INSERT INTO dbo.Brands (BrandName, BrandType, CreatedDate, CreatedBy,UpdatedDate,UpdatedBy,ComputerId,ApplicationId)
+    VALUES (@BrandName, @BrandType, GETDATE(),'AdminUser',NULL,NULL,'AdminDevice',0)
+    END
+  GO
+  
+-- Now, we can create TRIGGERS for some tables
+-- [Beers].[UpdatedBeers]
+  CREATE TRIGGER [dbo].[TE_UpdatedBeer]
+  ON [dbo].[Beers] FOR UPDATE
+  AS
+  -- No mostrar registro de ejecucion
+  SET NOCOUNT ON
+  DECLARE @BrandId INT, @BeerId INT, @BeerName VARCHAR(250)
+  DECLARE @BrandName VARCHAR(250), @BrandType VARCHAR(250) 
+  SELECT @BrandId=M.BrandId, @BeerId=BeerId, @BrandName=M.BrandName, @BrandType=M.BrandType, @BeerName=BeerName
+  FROM inserted I INNER JOIN Brands M ON M.BrandId=I.BrandId
+  UPDATE Resume
+  SET BrandId=@BrandId, 
+    BeerId=@BeerId, 
+    BrandName=@BrandName, 
+    BrandType=@BrandType, 
+    BeerName=@BeerName
+  WHERE BrandId=@BrandId AND BeerId=@BeerId
+  GO
+
+  ALTER TABLE [dbo].[Beers] ENABLE TRIGGER [TE_UpdatedBeer]
+  GO
+  
+-- [Beers].[Inserted]
+CREATE TRIGGER [dbo].[TE_InsertedBeer]
+ON [dbo].[Beers] FOR INSERT
+AS
+-- No mostrar registro de ejecucion
+SET NOCOUNT ON
+DECLARE @BrandId INT, @BeerId INT, @BeerName VARCHAR(250)
+DECLARE @BrandName VARCHAR(250), @BrandType VARCHAR(250) 
+SELECT @BrandId=M.BrandId, @BeerId=BeerId, @BrandName=M.BrandName, @BrandType=M.BrandType, @BeerName=BeerName
+FROM inserted I INNER JOIN Marcas M ON M.BrandId=I.BrandId
+INSERT INTO Resume VALUES(
+	@BrandId, @BeerId, @BrandName, @BrandType, @BeerName
+)
+GO
+
+ALTER TABLE [dbo].[Beers] ENABLE TRIGGER [TE_InsertedBeer]
+GO
+
+
+
